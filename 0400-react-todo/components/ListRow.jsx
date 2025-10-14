@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import CheckIcon from './CheckIcon';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faCheck } from '@fortawesome/free-solid-svg-icons';
 

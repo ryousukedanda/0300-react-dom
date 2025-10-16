@@ -41,34 +41,17 @@ export default function Body() {
   const deleteTask = (id) => {
     if (confirm('このタスクを削除しますか?')) {
       setTasks((prev) => prev.filter((prevTask) => prevTask.id !== id));
-    } else {
-      return;
     }
   };
 
-  const updateTask = (editType, key, e) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === editType.id ? { ...task, [key]: e.target.value } : task
-      )
-    );
-  };
-
-  const updateChecked = (task) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, checked: !t.checked } : t))
-    );
+  const updateTask = (task) => {
+    setTasks((prev) => prev.map((it) => (it.id === task.id ? task : it)));
   };
 
   return (
     <div className="max-w-[986px] my-16 mx-auto">
       <Form onSubmit={addTask} />
-      <List
-        tasks={tasks}
-        onDelete={deleteTask}
-        onUpdateTask={updateTask}
-        onUpdateChecked={updateChecked}
-      />
+      <List tasks={tasks} onDelete={deleteTask} onEdit={updateTask} />
     </div>
   );
 }

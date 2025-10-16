@@ -2,90 +2,54 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faCheck } from '@fortawesome/free-solid-svg-icons';
 
-//定数
 const labelClassName =
   'rounded-full border border-[#c6c6c6] p-1 h-7 w-7 cursor-pointer text-[#fefefe] flex justify-center items-center';
 
-export default function ListRow({
-  isCheckedCopmlete,
-  task,
-  deleteTaskId,
-  setDeleteTaskId,
-  onDelete,
-  onUpdateTask,
-  onUpdateChecked,
-}) {
-  //useRef
-  const editTaskNameRef = useRef();
-  const editDeadlineRef = useRef();
+export default function ListRow({ task, onDelete, onEdit, isCheckedCopmlete }) {
+  const containerRef = useRef(null);
+  const checkLabelRef = useRef(null);
 
-  //useState
-  const [editName, setEditName] = useState({});
-  const [editDeadline, setEditDeadline] = useState({});
-
-  //useEffect
-
-  //checkがtrueになったとき、800sec経ったらdeleteTaskIdをnullに更新
-  useEffect(() => {
-    if (deleteTaskId === null) return;
-    const tid = setTimeout(() => {
-      setDeleteTaskId(null);
-    }, 800);
-    return () => clearTimeout(tid);
-  }, [deleteTaskId]);
-
-  //タスク完了checkの更新(trueの場合はdeleteTaskIdを更新)
-  const handlefadeout = (task) => {
-    //task.checkedをトグル
-    onUpdateChecked(task);
-
-    //deleteTaskIdを更新
-    if (!task.checked && !isCheckedCopmlete) {
-      setDeleteTaskId(task.id);
-    }
-  };
-
-  //タスク名編集モード
-  const handleEditName = (task) => {
-    setEditName(task);
-    editTaskNameRef.current?.focus();
-  };
-
-  //期限日編集モード
-  const handleEditDeadline = (task) => {
-    setEditDeadline(task);
-    editDeadlineRef.current?.focus();
-    editDeadlineRef.current?.showPicker();
-  };
-
-  const handleCompleteEditTaskName = (e, editName) => {
+  const handleCompleteEditTaskName = (e, prevValue) => {
+    //空なら前の値に戻す
     if (!e.target.value) {
-      setEditName(null);
+      onEdit({ ...task, name: prevValue });
       return;
     }
-    //値があるなら、tasksを編集後に更新
-    onUpdateTask(editName, 'name', e);
-    setEditName(null);
   };
 
-  const handleCompleteEditDeadline = (e, editDeadline) => {
+  const handleCompleteEditDeadline = (e, prevValue) => {
+    //空なら前の値に戻す
     if (!e.target.value) {
-      setEditDeadline(null);
+      onEdit({ ...task, deadline: prevValue });
       return;
     }
-    //値があるなら、tasksを編集後に更新
-    onUpdateTask(editDeadline, 'deadline', e);
-    setEditDeadline(null);
+  };
+
+  const handleCompleteTask = () => {
+    //isCheckedCopmleteがtrue
+    if (isCheckedCopmlete) {
+      onEdit({ ...task, checked: !task.checked });
+      return;
+    }
+    //off->on && isCheckedCopmleteがfalse
+    if (!task.checked) {
+      checkLabelRef.current.classList.add('bg-[#7a72ff]');
+      containerRef.current.classList.add('opacity-0');
+      // アニメーションを見せたいので 800ms 遅延させる
+      setTimeout(() => {
+        onEdit({ ...task, checked: !task.checked });
+      }, 800);
+    }
   };
 
   return (
     <div
-      className={`${
-        deleteTaskId === task.id ? 'opacity-0' : ''
-      } flex items-center w-full border-b border-[#f0f0f0] transition-opacity duration-800`}
+      ref={containerRef}
+      className="flex items-center w-full border-b border-[#f0f0f0] transition-opacity duration-800"
     >
       <div className="flex justify-center flex-1 p-4 border-r border-[#f0f0f0]">
         <label
+          ref={checkLabelRef}
           className={
             task.checked ? labelClassName + ' bg-[#7a72ff]' : labelClassName
           }
@@ -93,50 +57,27 @@ export default function ListRow({
           <input
             type="checkbox"
             className={'border-0 appearance-none absolute'}
-            onChange={() => handlefadeout(task)}
+            onChange={handleCompleteTask}
             checked={task.checked}
           />
           <FontAwesomeIcon icon={faCheck} />
         </label>
       </div>
-      {editName?.id === task.id ? (
-        <div className="cursor-pointer flex-4 p-4 border-r border-[#f0f0f0]">
-          <input
-            type="text"
-            className="p-2 rounded-[8px] border border-[#f0f0f0] w-full"
-            defaultValue={editName.name}
-            ref={editTaskNameRef}
-            onBlur={(e) => {
-              handleCompleteEditTaskName(e, editName);
-            }}
-          />
-        </div>
-      ) : (
-        <div
-          className="cursor-pointer flex-4 p-4 border-r border-[#f0f0f0]"
-          onClick={() => handleEditName(task)}
-        >
-          {task.name}
-        </div>
-      )}
-      {editDeadline?.id === task.id ? (
-        <input
-          type="date"
-          className="p-2 rounded-[8px] border border-[#f0f0f0] "
-          defaultValue={editDeadline.deadline}
-          ref={editDeadlineRef}
-          onBlur={(e) => {
-            handleCompleteEditDeadline(e, editDeadline);
-          }}
+      <div className="cursor-pointer flex-4 p-4 border-r border-[#f0f0f0]">
+        <EdiableField
+          value={task.name}
+          onChange={(e) => onEdit({ ...task, name: e.target.value })}
+          onBlur={(e, prevValue) => handleCompleteEditTaskName(e, prevValue)}
         />
-      ) : (
-        <div
-          className="cursor-pointer flex-1 p-4 border-r border-[#f0f0f0]"
-          onClick={() => handleEditDeadline(task)}
-        >
-          {task.deadline}
-        </div>
-      )}
+      </div>
+      <div className="cursor-pointer flex-1 p-4 border-r border-[#f0f0f0]">
+        <EdiableField
+          value={task.deadline}
+          type={'date'}
+          onChange={(e) => onEdit({ ...task, deadline: e.target.value })}
+          onBlur={(e, prevValue) => handleCompleteEditDeadline(e, prevValue)}
+        />
+      </div>
       <div className="text-[12px] flex justify-center flex-1 p-4 border-r border-[#f0f0f0]">
         <FontAwesomeIcon
           icon={faTrash}
@@ -144,6 +85,45 @@ export default function ListRow({
           onClick={() => onDelete(task.id)}
         />
       </div>
+    </div>
+  );
+}
+
+function EdiableField({ value, onBlur, type = 'text', onChange }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef();
+  const prevValueRef = useRef(value);
+
+  const handleBlur = (e) => {
+    if (onBlur) {
+      onBlur(e, prevValueRef.current);
+    }
+    setIsEditing(false);
+  };
+
+  const handleStartEditing = () => {
+    setIsEditing(true);
+    setTimeout(() => {
+      inputRef.current.focus();
+      if (type === 'date') {
+        inputRef.current.showPicker();
+      }
+    });
+  };
+
+  return (
+    <div onClick={handleStartEditing}>
+      {isEditing ? null : value}
+      <input
+        type={type}
+        className={`p-2 rounded-[8px] border border-[#f0f0f0] w-full ${
+          isEditing ? '' : 'hidden'
+        }`}
+        value={value}
+        ref={inputRef}
+        onChange={(e) => onChange(e)}
+        onBlur={handleBlur}
+      />
     </div>
   );
 }

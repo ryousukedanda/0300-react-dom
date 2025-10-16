@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import ListRow from './ListRow';
 
-export default function List({
-  tasks,
-  onDelete,
-  onUpdateTask,
-  onUpdateChecked,
-}) {
+export default function List({ tasks, onDelete, onEdit }) {
   const [isCheckedCopmlete, setIsCheckedComplete] = useState(false);
-  const [deleteTaskId, setDeleteTaskId] = useState(null);
+  const sortedTasks = [...tasks]
+    .sort((a, b) => {
+      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    })
+    .filter((task) => {
+      if (!isCheckedCopmlete) {
+        return !task.checked;
+      }
+      return true;
+    });
 
   return (
     <div className="p-8">
@@ -34,33 +38,18 @@ export default function List({
         <div className="border-r-0 flex-1 py-2 px-4 text-[12px]"></div>
       </div>
       <div className="list-none p-0">
-        {[...tasks]
-          .sort((a, b) => {
-            return (
-              new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
-            );
-          })
-          .filter((task) => {
-            if (!isCheckedCopmlete) {
-              return !task.checked || task.id === deleteTaskId;
-            }
-            return true;
-          })
-          .map((task) => {
-            return (
-              <li key={task.id}>
-                <ListRow
-                  isCheckedCopmlete={isCheckedCopmlete}
-                  task={task}
-                  deleteTaskId={deleteTaskId}
-                  setDeleteTaskId={setDeleteTaskId}
-                  onDelete={onDelete}
-                  onUpdateTask={onUpdateTask}
-                  onUpdateChecked={onUpdateChecked}
-                />
-              </li>
-            );
-          })}
+        {sortedTasks.map((task) => {
+          return (
+            <li key={task.id}>
+              <ListRow
+                task={task}
+                onDelete={onDelete}
+                onEdit={onEdit}
+                isCheckedCopmlete={isCheckedCopmlete}
+              />
+            </li>
+          );
+        })}
       </div>
     </div>
   );

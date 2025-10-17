@@ -9,20 +9,34 @@ export default function ListRow({ task, onDelete, onEdit, isCheckedCopmlete }) {
   const containerRef = useRef(null);
   const checkLabelRef = useRef(null);
 
-  const handleCompleteEditTaskName = (e, prevValue) => {
-    //空なら前の値に戻す
+  // const handleCompleteEditTaskName = (e, prevValue) => {
+  //   //空なら前の値に戻す
+  //   if (!e.target.value) {
+  //     onEdit({ ...task, name: prevValue });
+  //     return;
+  //   }
+  // };
+
+  // const handleCompleteEditDeadline = (e, prevValue) => {
+  //   //空なら前の値に戻す
+  //   if (!e.target.value) {
+  //     onEdit({ ...task, deadline: prevValue });
+  //     return;
+  //   }
+  // };
+
+  const handleCompleteEditTaskName = (e) => {
     if (!e.target.value) {
-      onEdit({ ...task, name: prevValue });
       return;
     }
+    onEdit({ ...task, name: e.target.value });
   };
 
-  const handleCompleteEditDeadline = (e, prevValue) => {
-    //空なら前の値に戻す
+  const handleCompleteEditDeadline = (e) => {
     if (!e.target.value) {
-      onEdit({ ...task, deadline: prevValue });
       return;
     }
+    onEdit({ ...task, deadline: e.target.value });
   };
 
   const handleCompleteTask = () => {
@@ -66,16 +80,18 @@ export default function ListRow({ task, onDelete, onEdit, isCheckedCopmlete }) {
       <div className="cursor-pointer flex-4 p-4 border-r border-[#f0f0f0]">
         <EdiableField
           value={task.name}
-          onChange={(e) => onEdit({ ...task, name: e.target.value })}
-          onBlur={(e, prevValue) => handleCompleteEditTaskName(e, prevValue)}
+          // onChange={(e) => onEdit({ ...task, name: e.target.value })}
+          // onBlur={(e, prevValue) => handleCompleteEditTaskName(e, prevValue)}
+          onBlur={handleCompleteEditTaskName}
         />
       </div>
       <div className="cursor-pointer flex-1 p-4 border-r border-[#f0f0f0]">
         <EdiableField
           value={task.deadline}
           type={'date'}
-          onChange={(e) => onEdit({ ...task, deadline: e.target.value })}
-          onBlur={(e, prevValue) => handleCompleteEditDeadline(e, prevValue)}
+          // onChange={(e) => onEdit({ ...task, deadline: e.target.value })}
+          // onBlur={(e, prevValue) => handleCompleteEditDeadline(e, prevValue)}
+          onBlur={handleCompleteEditDeadline}
         />
       </div>
       <div className="text-[12px] flex justify-center flex-1 p-4 border-r border-[#f0f0f0]">
@@ -89,14 +105,14 @@ export default function ListRow({ task, onDelete, onEdit, isCheckedCopmlete }) {
   );
 }
 
-function EdiableField({ value, onBlur, type = 'text', onChange }) {
+function EdiableField({ value, onBlur, type = 'text' }) {
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef();
   const prevValueRef = useRef(value);
 
   const handleBlur = (e) => {
     if (onBlur) {
-      onBlur(e, prevValueRef.current);
+      onBlur(e);
     }
     setIsEditing(false);
   };
@@ -119,9 +135,9 @@ function EdiableField({ value, onBlur, type = 'text', onChange }) {
         className={`p-2 rounded-[8px] border border-[#f0f0f0] w-full ${
           isEditing ? '' : 'hidden'
         }`}
-        value={value}
+        defaultValue={value}
         ref={inputRef}
-        onChange={(e) => onChange(e)}
+        // onChange={(e) => onChange(e)}
         onBlur={handleBlur}
       />
     </div>

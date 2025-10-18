@@ -9,22 +9,6 @@ export default function ListRow({ task, onDelete, onEdit, isCheckedCopmlete }) {
   const containerRef = useRef(null);
   const checkLabelRef = useRef(null);
 
-  // const handleCompleteEditTaskName = (e, prevValue) => {
-  //   //空なら前の値に戻す
-  //   if (!e.target.value) {
-  //     onEdit({ ...task, name: prevValue });
-  //     return;
-  //   }
-  // };
-
-  // const handleCompleteEditDeadline = (e, prevValue) => {
-  //   //空なら前の値に戻す
-  //   if (!e.target.value) {
-  //     onEdit({ ...task, deadline: prevValue });
-  //     return;
-  //   }
-  // };
-
   const handleCompleteEditTaskName = (e) => {
     if (!e.target.value) {
       return;
@@ -78,19 +62,12 @@ export default function ListRow({ task, onDelete, onEdit, isCheckedCopmlete }) {
         </label>
       </div>
       <div className="cursor-pointer flex-4 p-4 border-r border-[#f0f0f0]">
-        <EdiableField
-          value={task.name}
-          // onChange={(e) => onEdit({ ...task, name: e.target.value })}
-          // onBlur={(e, prevValue) => handleCompleteEditTaskName(e, prevValue)}
-          onBlur={handleCompleteEditTaskName}
-        />
+        <EdiableField value={task.name} onBlur={handleCompleteEditTaskName} />
       </div>
       <div className="cursor-pointer flex-1 p-4 border-r border-[#f0f0f0]">
         <EdiableField
           value={task.deadline}
           type={'date'}
-          // onChange={(e) => onEdit({ ...task, deadline: e.target.value })}
-          // onBlur={(e, prevValue) => handleCompleteEditDeadline(e, prevValue)}
           onBlur={handleCompleteEditDeadline}
         />
       </div>
@@ -108,7 +85,6 @@ export default function ListRow({ task, onDelete, onEdit, isCheckedCopmlete }) {
 function EdiableField({ value, onBlur, type = 'text' }) {
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef();
-  const prevValueRef = useRef(value);
 
   const handleBlur = (e) => {
     if (onBlur) {
@@ -118,6 +94,7 @@ function EdiableField({ value, onBlur, type = 'text' }) {
   };
 
   const handleStartEditing = () => {
+    inputRef.current.value = value;
     setIsEditing(true);
     setTimeout(() => {
       inputRef.current.focus();
@@ -137,7 +114,6 @@ function EdiableField({ value, onBlur, type = 'text' }) {
         }`}
         defaultValue={value}
         ref={inputRef}
-        // onChange={(e) => onChange(e)}
         onBlur={handleBlur}
       />
     </div>
